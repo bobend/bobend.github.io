@@ -1,0 +1,118 @@
+class: center, middle
+
+# Teamdag 2019 - .NET Core 3.0
+### d. 13. Juni 2019 - [bben@dr.dk](mailto:bben@dr.dk)
+
+---
+
+# Agenda
+
+1. Hvad er nyt i .NET Core 3.0
+2. Hvornår udkommer det
+3. Demoer
+
+--
+
+.meme[![img](https://static.hbonordic.com/1f10ced-010e77ff582/HBON-ABOJR-000-PGM-01-02-2500-HD-169-SR-1920x1080-50000-22329149.jpg)]
+
+---
+
+# Hvad er nyt i .NET Core 3.0
+* Desktop stuff (WinForms, WPF)
+  * WinForms, WPF
+  * Single EXE (med core and deps indbygget),  MSIX
+--
+
+* c# 8 (kun i Core 3+)
+  * Ranges
+  * Nullable refrence types
+  * AsyncStream (IAsyncEnumerable)
+--
+
+* ASP.NET
+  * gRPC (Google remote proc)
+  * Blazor
+    * Server-side (med SignalR)
+    * Client-side (webassembly)
+
+---
+
+# Mere nyt...
+* `Newtonsoft.Json` ➡ `System.Text.Json`  (James Newton-King arbejder nu for Microsoft)
+* Project templates
+ * Service Workers
+
+Bliver ikke *backported*. System.Net.Http horror story.
+
+---
+
+# Hvornår?
+* .NET Core 3.0 RC (Release Candidate) i Juli 2019
+* .NET Core 3.0 GA (General Availability) i Septemper 2019
+* .NET Core 3.1 LTS (Long Term Support) i November 2019
+* .NET 5.0 November 2020
+* .NET 6.0 LTS November 2021
+* .NET 7.0 November 2022
+* .NET 8.0 LTS 2023
+
+(LTS er tre år fra udgivelse)
+
+Kilde : [https://github.com/dotnet/core/blob/master/roadmap.md#upcoming-ship-dates]
+
+---
+
+# Async eksemple
+
+```csharp
+  public class ADevice
+  {
+      public async IAsyncEnumerable<SensorData> GetSensorData1()
+      {
+          var r = new Random();
+          while (true)
+          {
+              await Task.Delay(r.Next(300));
+              yield return new SensorData(r.Next(100), r.Next(100));
+          }
+      }
+  }
+```
+Kilde : [https://csharp.christiannagel.com/2019/03/20/asyncstreams/]
+
+---
+# Microsofts DI
+```csharp
+    private static void ConfigureServices(IServiceCollection services, string inputFile)
+    {
+        Configuration = GetConfiguration();
+        services
+            .AddSingleton(Configuration)
+            .AddOptions()
+            .Configure<GheMigrationSettings>(cfg => Configuration.Bind(cfg))
+            .AddLogging(cfg =>
+            {
+                cfg.AddConsole();
+                cfg.AddDebug();
+                cfg.AddFile(o => o.RootPath = AppContext.BaseDirectory);
+            })
+            .Configure<LoggerFilterOptions>(options => options.MinLevel = LogLevel.Trace)
+            .AddSingleton(x => new ChromeDriver(AppContext.BaseDirectory))
+            .AddSingleton(x => new StateRepository(AppContext.BaseDirectory + "state.json"))
+            .AddSingleton(x => ExportEntry.ReadFromFile(inputFile))
+            .AddTransient<ProcessHelper>()
+            .AddSingleton(x => GheMigrationHelper.RetryPolicy)
+            .AddTransient<Application>();
+    }
+```
+Kilde: [https://github.com/drdk/ghe-migration-tools/blob/master/src/GheMigration.Wiki/Program.cs]
+
+---
+# Blazor Demo
+
+Følg : [https://docs.microsoft.com/en-us/aspnet/core/blazor/get-started]
+
+
+---
+# Worker Service
+
+Følg: [https://devblogs.microsoft.com/aspnet/net-core-workers-as-windows-services/]
